@@ -1,10 +1,11 @@
+import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function POST() {
   const cookieStore = await cookies()
-  const supabase = createServerClient(
+  const authClient = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -18,10 +19,15 @@ export async function POST() {
     }
   )
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await authClient.auth.getUser()
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
   const { data: org } = await supabase
     .from('organizations')
@@ -32,11 +38,14 @@ export async function POST() {
   let orgId = org?.id
 
   if (!orgId) {
-    const { data: newOrg } = await supabase
+    const { data: newOrg, error: orgError } = await supabase
       .from('organizations')
       .insert({ owner_id: user.id, name: 'My Organization', status: 'active' })
       .select('id')
       .single()
+    if (orgError) {
+      return NextResponse.json({ error: orgError.message }, { status: 500 })
+    }
     orgId = newOrg?.id
   }
 
