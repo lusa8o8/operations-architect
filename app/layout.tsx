@@ -15,7 +15,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: 'Operation-Architect',
-  description: 'Operational intelligence for organizations that move fast',
+  description: 'Operational intelligence for organizations',
 }
 
 export default function RootLayout({
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${dmMono.variable} ${fraunces.variable}`}>
+    <html lang= en className={${dmMono.variable} }>
       <body>{children}</body>
     </html>
   )
