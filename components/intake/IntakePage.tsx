@@ -36,9 +36,6 @@ export function IntakePage({ orgId }: IntakePageProps) {
     (GeneratedQuestion & { id: string })[]
   >([])
   const [inferences, setInferences] = useState<Inference[]>([])
-  const [, setConfirmedInferences] = useState<
-    { primitive_type: string; value: string }[]
-  >([])
   const [, setModelId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
