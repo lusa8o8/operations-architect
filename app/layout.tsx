@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang= en className={${dmMono.variable} }>
+    <html lang="en" className={`${dmMono.variable} ${fraunces.variable}`}>
       <body>{children}</body>
     </html>
   )
