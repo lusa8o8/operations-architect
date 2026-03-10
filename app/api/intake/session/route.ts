@@ -51,7 +51,7 @@ export async function POST() {
 
   const { data: session, error } = await supabase
     .from('intake_sessions')
-    .insert({ org_id: orgId, status: 'in_progress', version: 1 })
+    .insert({ org_id: orgId, status: 'in_progress', context_version: 1 })
     .select('id')
     .single()
 
