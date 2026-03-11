@@ -180,7 +180,7 @@ Extract all operational primitives. Be specific and concrete. Minimum 3 pipeline
       primitive_type: 'stage',
       inferred_value: stage,
       confidence: p.confidence_score ?? 0.7,
-      status: 'pending_confirmation',
+      status: 'pending',
       source_response: sessionId
     })
   }
@@ -191,7 +191,7 @@ Extract all operational primitives. Be specific and concrete. Minimum 3 pipeline
       primitive_type: 'owner',
       inferred_value: role,
       confidence: p.confidence_score ?? 0.7,
-      status: 'pending_confirmation',
+      status: 'pending',
       source_response: sessionId
     })
   }
@@ -202,7 +202,7 @@ Extract all operational primitives. Be specific and concrete. Minimum 3 pipeline
       primitive_type: 'trigger',
       inferred_value: trigger,
       confidence: p.confidence_score ?? 0.7,
-      status: 'pending_confirmation',
+      status: 'pending',
       source_response: sessionId
     })
   }
