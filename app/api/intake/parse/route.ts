@@ -160,30 +160,71 @@ Extract all operational primitives. Be specific and concrete. Minimum 3 pipeline
 
   const primitives = toolUse.input
 
-  const { data: sessionRow } = await supabase
+  const { data: sessionData } = await supabase
     .from('intake_sessions')
     .select('org_id')
     .eq('id', sessionId)
     .single()
 
-  if (!sessionRow?.org_id) {
+  const orgId = sessionData?.org_id
+  if (!orgId) {
     return NextResponse.json({ error: 'Session not found' }, { status: 400 })
   }
 
-  const { error: storeError } = await supabase
-    .from('inferred_primitives')
-    .insert({
-      org_id: sessionRow.org_id,
-      primitive_type: 'wave1_parse',
-      inferred_value: primitives,
-      confidence: (primitives as any).confidence_score ?? 0.7,
+  const p = primitives as any
+  const inserts = []
+
+  for (const stage of (p.stages ?? [])) {
+    inserts.push({
+      org_id: orgId,
+      primitive_type: 'stage',
+      inferred_value: stage,
+      confidence: p.confidence_score ?? 0.7,
       status: 'pending_confirmation',
       source_response: sessionId
     })
-
-  if (storeError) {
-    console.error('Store error:', storeError)
   }
+
+  for (const role of (p.roles ?? [])) {
+    inserts.push({
+      org_id: orgId,
+      primitive_type: 'owner',
+      inferred_value: role,
+      confidence: p.confidence_score ?? 0.7,
+      status: 'pending_confirmation',
+      source_response: sessionId
+    })
+  }
+
+  for (const trigger of (p.triggers ?? [])) {
+    inserts.push({
+      org_id: orgId,
+      primitive_type: 'trigger',
+      inferred_value: trigger,
+      confidence: p.confidence_score ?? 0.7,
+      status: 'pending_confirmation',
+      source_response: sessionId
+    })
+  }
+
+  if (inserts.length > 0) {
+    const { error: storeError } = await supabase
+      .from('inferred_primitives')
+      .insert(inserts)
+
+    if (storeError) {
+      console.error('Store error:', storeError)
+    }
+  }
+
+  await supabase
+    .from('operational_models')
+    .insert({
+      org_id: orgId,
+      version: 1,
+      model_graph: primitives,
+      confidence_score: p.confidence_score ?? 0.7
+    })
 
   await supabase
     .from('intake_sessions')
