@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
                   question: { type: 'string', description: 'The question to ask the CEO' },
                   why: { type: 'string', description: 'Why this gap matters operationally' },
                   priority: { type: 'string', enum: ['high', 'medium', 'low'] },
-                  type: { type: 'string', enum: ['missing_primitive', 'clarification', 'capacity', 'decision_point', 'artifact'] }
+                  type: { type: 'string', enum: ['trigger_signal', 'entry_point', 'artifact', 'decision_point', 'capacity', 'feedback_loop', 'ownership'] }
                 },
                 required: ['key', 'question', 'why', 'priority', 'type']
               }
