@@ -128,7 +128,7 @@ Rules:
     question_type: q.type,
     question_text: q.question,
     generated_reason: q.why,
-    priority: q.priority === 'high' ? 1 : q.priority === 'medium' ? 2 : 3,
+    priority: q.priority,
   }))
 
   const { data: stored, error: storeError } = await supabase
