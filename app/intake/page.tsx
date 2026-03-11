@@ -46,6 +46,11 @@ export default function IntakePage() {
     if (current + 1 < QUESTIONS.length) {
       setCurrent(current + 1)
     } else {
+      await fetch('/api/intake/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      })
       setDone(true)
     }
   }
