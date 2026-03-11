@@ -174,7 +174,7 @@ Extract all operational primitives. Be specific and concrete. Minimum 3 pipeline
     .from('inferred_primitives')
     .insert({
       org_id: sessionRow.org_id,
-      type: 'wave1_parse',
+      primitive_type: 'wave1_parse',
       inferred_value: primitives,
       confidence: (primitives as any).confidence_score ?? 0.7,
       status: 'pending_confirmation',
