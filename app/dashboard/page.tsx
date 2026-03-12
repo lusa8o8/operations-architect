@@ -47,6 +47,12 @@ export default function DashboardPage() {
           >
             Start intake →
           </button>
+          <button
+            onClick={() => window.location.href = '/dashboard/pipeline'}
+            style={{ padding: '12px 24px', marginTop: '12px', background: 'none', border: '1px solid #4DFFA0', color: '#4DFFA0', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}
+          >
+            View pipeline →
+          </button>
         </div>
       </div>
     </div>
