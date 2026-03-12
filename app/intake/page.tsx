@@ -9,7 +9,7 @@ const WAVE1_QUESTIONS = [
   { key: 'value_delivery', text: 'What does your organization provide to them?', placeholder: 'e.g. Tutoring sessions, consulting, software tools, logistics...' },
   { key: 'value_moment', text: 'When does someone decide to use your service?', placeholder: 'e.g. When they fail an exam, when they need a website, when they have too much stock...' },
   { key: 'value_journey', text: 'What usually happens between discovering you and receiving value?', placeholder: 'e.g. They see our ad → book a call → we assess their needs → they sign up → we start work' },
-  { key: 'team_roles', text: 'What roles currently exist in the organization?', placeholder: 'e.g. CEO, tutors, sales team, admin, content creators... (it\'s okay if roles overlap or are informal)' },
+  { key: 'team_roles', text: 'What roles currently exist in the organization?', placeholder: 'e.g. CEO, tutors, sales team, admin, content creators...' },
   { key: 'bottleneck', text: 'Where does work usually slow down or become chaotic?', placeholder: 'e.g. Scheduling is a mess, we lose leads after first contact, delivery takes too long...' },
 ]
 
@@ -21,15 +21,17 @@ type DiscoveryQuestion = {
   priority: number
 }
 
-type Phase = 'wave1' | 'loading_discovery' | 'wave2' | 'complete'
+type Phase = 'org_name' | 'wave1' | 'loading_discovery' | 'wave2' | 'complete'
 
 export default function IntakePage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [phase, setPhase] = useState<Phase>('wave1')
+  const [orgId, setOrgId] = useState<string | null>(null)
+  const [phase, setPhase] = useState<Phase>('org_name')
+  const [orgName, setOrgName] = useState('')
+  const [savingOrgName, setSavingOrgName] = useState(false)
   const [current, setCurrent] = useState(0)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
-  const [gaps, setGaps] = useState<string[]>([])
   const [discoveryQuestions, setDiscoveryQuestions] = useState<DiscoveryQuestion[]>([])
   const [discoveryIndex, setDiscoveryIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
@@ -38,11 +40,27 @@ export default function IntakePage() {
     fetch('/api/intake/session', { method: 'POST' })
       .then(r => r.json())
       .then(d => {
-        if (d.sessionId) setSessionId(d.sessionId)
-        else setError('Could not start session. Are you logged in?')
+        if (d.sessionId) {
+          setSessionId(d.sessionId)
+          setOrgId(d.orgId)
+        } else {
+          setError('Could not start session. Are you logged in?')
+        }
       })
       .catch(() => setError('Network error.'))
   }, [])
+
+  async function saveOrgName() {
+    if (!orgName.trim() || !orgId) return
+    setSavingOrgName(true)
+    const supabase = createClient()
+    await supabase
+      .from('organizations')
+      .update({ name: orgName.trim() })
+      .eq('id', orgId)
+    setSavingOrgName(false)
+    setPhase('wave1')
+  }
 
   async function saveWave1AndAdvance() {
     if (!draft.trim() || !sessionId) return
@@ -72,7 +90,6 @@ export default function IntakePage() {
       })
       const data = await res.json()
       if (data.questions && data.questions.length > 0) {
-        setGaps(data.gaps ?? [])
         setDiscoveryQuestions(data.questions)
         setDiscoveryIndex(0)
         setPhase('wave2')
@@ -125,14 +142,36 @@ export default function IntakePage() {
     </div></div>
   )
 
+  if (phase === 'org_name') return (
+    <div style={s}><div style={card}>
+      <span style={{ color: '#4DFFA0', fontSize: '14px' }}>OA</span>
+      <h1 style={{ fontSize: '24px', margin: '24px 0 8px', fontFamily: 'serif', fontWeight: 400 }}>Let's start with the basics.</h1>
+      <p style={{ color: '#6B6B8A', fontSize: '14px', marginBottom: '40px' }}>What is your organization called?</p>
+      <input
+        value={orgName}
+        onChange={e => setOrgName(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && saveOrgName()}
+        placeholder="e.g. Transcended Study Hub, Acme Corp, Studio Neon..."
+        autoFocus
+        style={{ width: '100%', backgroundColor: '#12121E', border: '1px solid #2A2A38', borderRadius: '6px', color: '#E8E8F0', padding: '16px', fontSize: '16px', fontFamily: 'monospace', outline: 'none', boxSizing: 'border-box', marginBottom: '16px' }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button
+          onClick={saveOrgName}
+          disabled={!orgName.trim() || savingOrgName}
+          style={{ padding: '12px 24px', background: orgName.trim() ? '#4DFFA0' : '#1A1A2E', color: orgName.trim() ? '#0A0A0F' : '#6B6B8A', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: orgName.trim() ? 'pointer' : 'not-allowed' }}
+        >
+          {savingOrgName ? 'Saving...' : 'Continue →'}
+        </button>
+      </div>
+    </div></div>
+  )
+
   if (phase === 'loading_discovery') return (
     <div style={s}><div style={card}>
       <span style={{ color: '#4DFFA0', fontSize: '14px' }}>OA</span>
       <h2 style={{ fontSize: '20px', margin: '24px 0 8px', fontFamily: 'serif', fontWeight: 400 }}>Analysing your organization...</h2>
       <p style={{ color: '#6B6B8A', fontSize: '14px' }}>The system is identifying gaps in your operational model. This takes about 15 seconds.</p>
-      <div style={{ marginTop: '24px', height: '2px', backgroundColor: '#1A1A2E', borderRadius: '1px', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: '100%', backgroundColor: '#4DFFA0', borderRadius: '1px', animation: 'pulse 2s infinite' }} />
-      </div>
     </div></div>
   )
 
@@ -140,13 +179,13 @@ export default function IntakePage() {
     <div style={s}><div style={card}>
       <span style={{ color: '#4DFFA0', fontSize: '14px' }}>OA</span>
       <h1 style={{ fontSize: '24px', margin: '24px 0 8px' }}>Intake complete.</h1>
-        <p style={{ color: '#6B6B8A', fontSize: '14px', marginBottom: '32px' }}>Your operational model has been built. Go to your dashboard to review your pipeline.</p>
-        <button
-          onClick={() => window.location.href = '/intake/review'}
-          style={{ padding: '12px 24px', background: '#4DFFA0', color: '#0A0A0F', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}
-        >
-        View my pipeline →
-        </button>
+      <p style={{ color: '#6B6B8A', fontSize: '14px', marginBottom: '32px' }}>Your operational model has been built. Review it before it locks.</p>
+      <button
+        onClick={() => window.location.href = '/intake/review'}
+        style={{ padding: '12px 24px', background: '#4DFFA0', color: '#0A0A0F', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}
+      >
+        Review model →
+      </button>
     </div></div>
   )
 
@@ -174,9 +213,10 @@ export default function IntakePage() {
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
           <button
-            onClick={() => {
+            onClick={async () => {
               setDraft("I don't know")
-              setTimeout(() => saveDiscoveryAndAdvance(), 100)
+              await new Promise(r => setTimeout(r, 100))
+              await saveDiscoveryAndAdvance()
             }}
             style={{ background: 'none', border: 'none', color: '#6B6B8A', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline' }}
           >
