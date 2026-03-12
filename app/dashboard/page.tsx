@@ -137,10 +137,11 @@ export default function DashboardPage() {
         {org && model && graph && (
           <div>
             <div style={{ marginBottom: '48px' }}>
-              <p style={{ color: '#6B6B8A', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Your organization</p>
-              <h1 style={{ fontSize: '28px', lineHeight: '1.4', fontFamily: 'serif', fontWeight: 400, marginBottom: '8px' }}>
-                {northStar}
-              </h1>
+            <p style={{ color: '#6B6B8A', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>Your organization</p>
+            <h1 style={{ fontSize: '28px', lineHeight: '1.4', fontFamily: 'serif', fontWeight: 400, marginBottom: '8px' }}>
+              {org.name && org.name !== 'My Organization' ? org.name : northStar}
+            </h1>
+            <p style={{ color: '#6B6B8A', fontSize: '14px', marginBottom: '4px' }}>{northStar}</p>
               <p style={{ color: '#6B6B8A', fontSize: '14px', marginBottom: '16px' }}>
                 For <span style={{ color: '#E8E8F0' }}>{graph.primary_customer}</span>
               </p>

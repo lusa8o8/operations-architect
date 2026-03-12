@@ -23,6 +23,7 @@ export default function PipelinePage() {
   const [model, setModel] = useState<ModelGraph | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [orgName, setOrgName] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -48,6 +49,13 @@ export default function PipelinePage() {
 
       const graph = models?.[0]?.model_graph as ModelGraph
       if (!graph) { setError('No model found.'); setLoading(false); return }
+
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('name')
+        .eq('owner_id', data.user.id)
+        .single()
+      setOrgName(orgData?.name ?? null)
 
       setModel(graph)
       setLoading(false)
@@ -102,6 +110,9 @@ export default function PipelinePage() {
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '64px 48px' }}>
 
         <div style={{ marginBottom: '16px' }}>
+          {orgName && (
+            <p style={{ color: '#4DFFA0', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>{orgName}</p>
+          )}
           <p style={{ color: '#6B6B8A', fontSize: '11px', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '12px' }}>North Star</p>
           <h1 style={{ fontSize: '28px', lineHeight: '1.4', fontFamily: 'serif', fontWeight: 400, marginBottom: '8px' }}>
             {model?.north_star}
