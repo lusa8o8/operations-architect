@@ -103,10 +103,16 @@ export default function IntakePage() {
     if (!draft.trim()) return
     setSaving(true)
     const q = discoveryQuestions[discoveryIndex]
+    const isLast = discoveryIndex + 1 === discoveryQuestions.length
     await fetch('/api/intake/discover/respond', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questionId: q.id, responseText: draft.trim() }),
+      body: JSON.stringify({
+        questionId: q.id,
+        responseText: draft.trim(),
+        isLast,
+        sessionId
+      }),
     })
     setSaving(false)
     setDraft('')
