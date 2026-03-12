@@ -196,9 +196,9 @@ export default function ReviewPage() {
         <span style={{ color: '#4DFFA0', fontSize: '14px' }}>OA</span>
         <h1 style={{ fontSize: '24px', margin: '24px 0 8px' }}>Model confirmed.</h1>
         <p style={{ color: '#6B6B8A', fontSize: '14px', marginBottom: '32px' }}>Your operational pipeline is ready.</p>
-        <button onClick={() => window.location.href = '/dashboard'}
+        <button onClick={() => window.location.href = '/dashboard/pipeline'}
           style={{ padding: '12px 24px', background: '#4DFFA0', color: '#0A0A0F', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
-          View dashboard →
+          View pipeline →
         </button>
       </div>
     </div>
