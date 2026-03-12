@@ -51,6 +51,7 @@ export default function DashboardPage() {
           .from('operational_models')
           .select('version, confidence_score, created_at, model_graph')
           .eq('org_id', userOrg.id)
+          .eq('status', 'confirmed')
           .order('version', { ascending: false })
           .limit(1)
 

@@ -39,6 +39,56 @@ export async function POST(request: NextRequest) {
     .single()
 
   const orgId = session?.org_id
+  if (!orgId) {
+    return NextResponse.json({ error: 'Session not found' }, { status: 400 })
+  }
+
+  await supabase
+    .from('operational_models')
+    .update({ status: 'archived' })
+    .eq('org_id', orgId)
+    .eq('status', 'confirmed')
+
+  const { data: currentModel } = await supabase
+    .from('operational_models')
+    .select('id, version, model_graph')
+    .eq('org_id', orgId)
+    .eq('status', 'draft')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!currentModel) {
+    return NextResponse.json({ error: 'No draft model found' }, { status: 400 })
+  }
+
+  const graph = currentModel.model_graph as any
+  const updatedGraph = {
+    ...graph,
+    stages: confirmedStages ?? graph.stages,
+    roles: confirmedRoles ?? graph.roles,
+    triggers: confirmedTriggers ?? graph.triggers,
+    corrections: corrections ?? {},
+    confirmed_at: new Date().toISOString(),
+  }
+
+  const { data: versions } = await supabase
+    .from('operational_models')
+    .select('version')
+    .eq('org_id', orgId)
+    .order('version', { ascending: false })
+    .limit(1)
+
+  const nextVersion = (versions?.[0]?.version ?? 0) + 1
+
+  await supabase
+    .from('operational_models')
+    .update({
+      status: 'confirmed',
+      version: nextVersion,
+      model_graph: updatedGraph
+    })
+    .eq('id', currentModel.id)
 
   if (rejectedIds && rejectedIds.length > 0) {
     await supabase
@@ -47,43 +97,10 @@ export async function POST(request: NextRequest) {
       .in('id', rejectedIds)
   }
 
-  if (confirmedStages && confirmedStages.length > 0) {
-    await supabase
-      .from('inferred_primitives')
-      .update({ status: 'confirmed' })
-      .eq('org_id', orgId)
-      .eq('primitive_type', 'stage')
-  }
-
-  const { data: currentModel } = await supabase
-    .from('operational_models')
-    .select('id, model_graph')
-    .eq('org_id', orgId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (currentModel) {
-    const graph = currentModel.model_graph as any
-    const updatedGraph = {
-      ...graph,
-      stages: confirmedStages ?? graph.stages,
-      roles: confirmedRoles ?? graph.roles,
-      triggers: confirmedTriggers ?? graph.triggers,
-      corrections: corrections ?? {},
-      confirmed_at: new Date().toISOString(),
-    }
-
-    await supabase
-      .from('operational_models')
-      .update({ model_graph: updatedGraph })
-      .eq('id', currentModel.id)
-  }
-
   await supabase
     .from('intake_sessions')
     .update({ status: 'completed' })
     .eq('id', sessionId)
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, version: nextVersion })
 }

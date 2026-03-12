@@ -44,7 +44,8 @@ export default function PipelinePage() {
         .from('operational_models')
         .select('model_graph, confidence_score')
         .eq('org_id', session.org_id)
-        .order('created_at', { ascending: false })
+        .eq('status', 'confirmed')
+        .order('version', { ascending: false })
         .limit(1)
 
       const graph = models?.[0]?.model_graph as ModelGraph
