@@ -32,7 +32,7 @@ export default function PipelinePage() {
       const { data: sessions } = await supabase
         .from('intake_sessions')
         .select('org_id, status')
-        .eq('status', 'confirmed')
+        .eq('status', 'completed')
         .order('started_at', { ascending: false })
         .limit(1)
 

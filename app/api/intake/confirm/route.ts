@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
   await supabase
     .from('intake_sessions')
-    .update({ status: 'confirmed' })
+    .update({ status: 'completed' })
     .eq('id', sessionId)
 
   return NextResponse.json({ ok: true })
